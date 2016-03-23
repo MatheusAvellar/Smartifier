@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8"/>
+    <meta http-equiv="Content-Language" content="en-us"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="author" content="Matheus Avellar"/>
+    <title>Smartifier!</title>
+    <link href="http://fonts.googleapis.com/css?family=Bree+Serif" type="text/css" rel="stylesheet"/>
+    <link href="" type="text/css" rel="stylesheet"/>
+    <link href="./resources/index-min.css" type="text/css" rel="stylesheet"/>
+    <link href="./resources/favicon.png" type="image/png" rel="shortcut icon"/>
+    <link href="./resources/favicon.png" type="image/png" rel="icon"/>
+    <script src="./resources/jquery.js" type="text/javascript"></script>
+    <style type="text/css">
+        @import url(http://fonts.googleapis.com/css?family=PT+Sans:400,700);
+
+        ::selection {
+            background-color: rgba(142,68,173,.7);
+            color: #ededed;
+        }
+        button, br {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -o-user-select: none;
+            -ms-user-select: none;
+            cursor: default;
+        }
+        body,h1,h2,h3,h4,h5,h6 {
+            margin: 0;
+            color: #0e0e0e;
+            font-family: "PT Sans", sans-serif;
+        }
+        body {  overflow: hidden;  }
+        #header {
+            padding: 10px 15px;
+            background-color: #eee;
+        }
+        input {
+            border: 0;
+            border-bottom: 2px solid;
+            display: inline;
+            padding: 5px;
+            outline: none;
+            width: 40%;
+            font-size: 1.2em;
+            margin-bottom: 3em;
+        }
+        .input-holder {
+            text-align: center;
+            padding: 50px;
+        }
+        p {
+            font-size: 2em;
+            font-family: "Bree Serif", serif;
+        }
+        button {
+            display: inline-block;
+            background: #9b59b6;
+            outline: 0;
+            border-width: 0px 0px 5px 0px;
+            border-color: #8e44ad;
+            border-style: solid;
+            padding: 10px 15px;
+            color: #eee;
+            font-family: "PT Sans", sans-serif;
+            font-size: 1.2em;
+            border-radius: 3px;
+        }
+        button:active {
+            background-color: #8e44ad;
+            border: 0;
+            transform: translateY(5px);
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>Smartifier!</h1>
+        <div id="subtitle"></div>
+    </div>
+    <div id="app">
+        <div class="input-holder">
+            <p>Insert a sentence to be smartified!</p>
+            <input spellcheck="true" maxlength="140"/>
+            <br/>
+            <button>Smartify!</button>
+        </div>
+    </div>
+    <div id="footer">
+
+    </div>
+</body>
+</html>
