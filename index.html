@@ -5,21 +5,24 @@
     <meta http-equiv="Content-Language" content="en-us"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <meta name="author" content="Matheus Avellar"/>
+    <base href="http://avellar.ml" target="_blank"/>
     <title>Smartifier!</title>
-    <link href="http://fonts.googleapis.com/css?family=Bree+Serif" type="text/css" rel="stylesheet"/>
     <link href="" type="text/css" rel="stylesheet"/>
-    <link href="./resources/index-min.css" type="text/css" rel="stylesheet"/>
-    <link href="./resources/favicon.png" type="image/png" rel="shortcut icon"/>
-    <link href="./resources/favicon.png" type="image/png" rel="icon"/>
+    <link href="/resources/favicon.png" type="image/png" rel="shortcut icon"/>
+    <link href="/resources/favicon.png" type="image/png" rel="icon"/>
     <script src="./resources/jquery.js" type="text/javascript"></script>
     <style type="text/css">
         @import url(http://fonts.googleapis.com/css?family=PT+Sans:400,700);
+        @import url(http://fonts.googleapis.com/css?family=Bree+Serif);
 
         ::selection {
             background-color: rgba(142,68,173,.7);
             color: #ededed;
         }
-        button, br {
+        body {
+            background-color: #eee;
+        }
+        button,.entry .tag {
             user-select: none;
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -32,31 +35,39 @@
             color: #0e0e0e;
             font-family: "PT Sans", sans-serif;
         }
-        body {  overflow: hidden;  }
         #header {
             padding: 10px 15px;
-            background-color: #eee;
+        }
+        #app {
+            background-color: #fff;
+            min-height: 500px;
         }
         input {
             border: 0;
-            border-bottom: 2px solid;
+            border-bottom: 2px solid #0e0e0e;
             display: inline;
             padding: 5px;
             outline: none;
             width: 40%;
             font-size: 1.2em;
-            margin-bottom: 3em;
+            margin: 3em;
+            background-color: transparent;
         }
         .input-holder {
             text-align: center;
             padding: 50px;
         }
-        p {
+        h2 {
             font-size: 2em;
             font-family: "Bree Serif", serif;
         }
+        .button-holder {
+            width: 100%;
+            height: 50px;
+        }
         button {
             display: inline-block;
+            position: absolute;
             background: #9b59b6;
             outline: 0;
             border-width: 0px 0px 5px 0px;
@@ -67,11 +78,65 @@
             font-family: "PT Sans", sans-serif;
             font-size: 1.2em;
             border-radius: 3px;
+            margin-left: -52.5px;
         }
         button:active {
             background-color: #8e44ad;
             border: 0;
             transform: translateY(5px);
+        }
+        .response-holder {
+            padding: 50px;
+            text-align: center;
+        }
+        .responses {
+            padding: 20px 60px;
+            margin-top: 10px;
+        }
+        .entry {
+            display: block;
+            text-align: left;
+            padding: 15px;
+            background: #eee;
+            margin-bottom: 1px;
+            transition: all .1s ease;
+            border-radius: 3px;
+            position: relative;
+            font-size: 1.2em;
+        }
+        .entry .tag {
+            font-variant: small-caps;
+            color: #984db7;
+            position: absolute;
+            bottom: 1px;
+            left: 4px;
+            font-family: "Bree Serif", serif;
+            font-size: 0.75em;
+        }
+        .entry:first-child {
+            border-radius: 3px 3px 0 0;
+        }
+        .entry:last-child {
+            border-radius: 0 0 3px 3px;
+            background-color: rgba(155, 89, 182, 0.25);
+        }
+        #footer {
+            color: #1e1e1e;
+            padding: 10px 20px;
+            font-family: "PT Sans", sans-serif;
+        }
+        .heart {
+            color: #e74c3c;
+        }
+        a.github:hover {
+            border: 1px solid #3498db;
+            border-radius: 2px;
+        }
+        a.github {
+            color: #3498db;
+            text-decoration: none;
+            border: 1px solid transparent;
+            padding: 0px 3px;
         }
     </style>
 </head>
@@ -82,14 +147,63 @@
     </div>
     <div id="app">
         <div class="input-holder">
-            <p>Insert a sentence to be smartified!</p>
-            <input spellcheck="true" maxlength="140"/>
-            <br/>
-            <button>Smartify!</button>
+            <h2>Insert a simple sentence</h2>
+            <input id="sentence" type="text" spellcheck="true" maxlength="140"/>
+            <div class="button-holder">
+                <button onclick="smartify();">Smartify!</button>
+            </div>
+        </div>
+        <div class="response-holder">
+            <h2>...and get it back smartified!</h2>
+            <div class="responses">
+                <span class="entry">
+                    <a class="tag">source</a>
+                    I have a cat
+                </span>
+                <span class="entry">
+                    <a class="tag">smartified</a>
+                    I am in the posession of a domesticated feline.
+                </span>
+            </div>
         </div>
     </div>
     <div id="footer">
-
+        <div>
+            <a id="time">14:40:37</a>
+            <script type="text/javascript">
+                (function() {
+                    function _l () {
+                        var d = new Date();
+                        var t = {
+                            h: d.getHours(),
+                            m: d.getMinutes(),
+                            s: d.getSeconds()
+                        };
+                        t.h = t.h < 10 ? "0" + t.h : t.h;
+                        t.m = t.m < 10 ? "0" + t.m : t.m;
+                        t.s = t.s < 10 ? "0" + t.s : t.s;
+                        $("#time").text(t.h + ":" + t.m + ":" + t.s);
+                        var _t = setTimeout(_l, 1000);
+                    }
+                    _l();
+                })();
+            </script>
+        </div>
+        <div>
+            Made with <span class="heart">❤</span> by
+            <a class="github" href="http://github.com/MatheusAvellar" target="_blank">MatheusAvellar</a>
+        </div>
     </div>
+    <script type="text/javascript">
+        var smartify = function() {
+            var _s = $("#sentence").val().trim().split(" ");
+            var sentence = [];
+            for (var i = 0, l = _s.length; i < l; i++) {
+                if (_s[i] == "") continue;
+                sentence.push(_s[i]);
+            }
+            console.log(sentence);
+        }
+    </script>
 </body>
 </html>
