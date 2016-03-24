@@ -21,6 +21,7 @@
         }
         body {
             background-color: #eee;
+            font-family: "PT Sans", sans-serif;
         }
         button,.entry .tag {
             user-select: none;
@@ -30,10 +31,12 @@
             -ms-user-select: none;
             cursor: default;
         }
+        h2,h3,h4,h5,h6 {
+            font-family: "Bree Serif", serif;
+        }
         body,h1,h2,h3,h4,h5,h6 {
             margin: 0;
             color: #0e0e0e;
-            font-family: "PT Sans", sans-serif;
         }
         #header {
             padding: 10px 15px;
@@ -59,7 +62,9 @@
         }
         h2 {
             font-size: 2em;
-            font-family: "Bree Serif", serif;
+        }
+        h3 {
+            font-size: 1.5em;
         }
         .button-holder {
             width: 100%;
@@ -122,7 +127,7 @@
         }
         #footer {
             color: #1e1e1e;
-            padding: 10px 20px;
+            padding: 15px 20px;
             font-family: "PT Sans", sans-serif;
         }
         .heart {
@@ -137,6 +142,37 @@
             text-decoration: none;
             border: 1px solid transparent;
             padding: 0px 3px;
+        }
+        #console {
+            border-radius: 3px;
+            width: 400px;
+            height: 400px;
+            background-color: #1e1e1e;
+            position: fixed;
+            right: 5px;
+            top: 5px;
+            transition: all .2s ease;
+            font-family: "Consolas", monospace;
+            font-size: 15px;
+            color: #eee;
+            padding: 15px;
+            border: 2px solid #b0b0b0;
+            overflow-y: auto;
+            word-break: break-all;
+            opacity: 1;
+            pointer-events: none;
+        }
+        .console-line {
+            display: block;
+            margin-bottom: 10px;
+        }
+        #synonyms {
+            background: #eee;
+            text-align: left;
+            padding: 40px;
+        }
+        ul {
+            list-style: none;
         }
     </style>
 </head>
@@ -156,14 +192,23 @@
         <div class="response-holder">
             <h2>...and get it back smartified!</h2>
             <div class="responses">
-                <span class="entry">
+                <div class="entry">
+                    <a class="spacing">&nbsp;</a>
                     <a class="tag">source</a>
-                    I have a cat
-                </span>
-                <span class="entry">
+                    <span id="dumb">I have a cat</span>
+                </div>
+                <div class="entry">
+                    <a class="spacing">&nbsp;</a>
                     <a class="tag">smartified</a>
-                    I am in the posession of a domesticated feline.
-                </span>
+                    <span id="smart">I posess a domestic feline.</span>
+                </div>
+            </div>
+            <div id="synonyms">
+                <h3>Select the synonym that makes <span class="current-word">cat</span> look the smartest!</h3>
+                <ul>
+                    <li>domestic feline</li>
+                    <li></li>
+                </ul>
             </div>
         </div>
     </div>
@@ -194,15 +239,97 @@
             <a class="github" href="http://github.com/MatheusAvellar" target="_blank">MatheusAvellar</a>
         </div>
     </div>
+    <div id="console">
+    </div>
     <script type="text/javascript">
+        var synObj = {};
+        var xss = function(text) {
+            return (text+"").split("<").join("&lt;").split(">").join("&gt;").split("\"").join("&quot;");
+        }
+        console.writeline = function(text) {
+            console.log(text);
+            $("#console").append("<span class='console-line'>&gt; " + xss(text) + "</span>");
+        }
         var smartify = function() {
-            var _s = $("#sentence").val().trim().split(" ");
-            var sentence = [];
-            for (var i = 0, l = _s.length; i < l; i++) {
-                if (_s[i] == "") continue;
-                sentence.push(_s[i]);
+            if ($("#sentence").val().trim() != "") {                // Checks for empty input
+                var _s = $("#sentence").val().trim()
+                            .split(".").join(" . ")
+                            .split(",").join(" , ")                 // Removes puctuation
+                            .split("!").join(" ! ")                 // from the input
+                            .split("?").join(" ? ")
+                            .split(" ");                            // Gets array from input
+                
+                $("#smart").text("");                               // Clears output
+                $("#dumb").text(xss($("#sentence").val().trim()));  // Updates "source" output
+
+                var sentence = [];                                  // Initializes array
+                for (var i = 0, l = _s.length; i < l; i++) {
+                    var word = xss(_s[i]);                          // Cleanses words
+
+                    if (word == "") continue;                       // Skips empty lines
+
+                    if (word == "."
+                     || word == ","                                 // Appends and skips
+                     || word == "!"                                 // any punctuation
+                     || word == "?") {
+                        $("#smart").append(word);
+                        continue;
+                    }
+
+                    sentence.push(word);
+
+                    console.log("1: " + word);
+                    if (l < 10) {
+                        console.log("2: " + word);
+                        $.ajax({
+                            _ignore: word,
+                            dataType: "json",
+                            type: "GET",
+                            url: "http://words.bighugelabs.com/api/2/cebf0734eef56229a6091479230f735b/"
+                                + word.toLowerCase()
+                                + "/json",
+                            error: function(xhr, status, error) {
+                                console.writeline(xhr);
+                                console.writeline(status);
+                                console.writeline(error);
+                            },
+                            success: function(result, status, xhr) {
+                                console.writeline("Succeeded on sending ", this.__ignore, "!");
+                                console.writeline(status);
+                                console.log(result); // result.noun.syn == Array
+                                console.log(this._ignore);
+                                AcquiredSynonyms(xss(this._ignore), result, status, xhr);
+                            },
+                            complete: function(status, xhr) {
+                                console.writeline("Sent ", this.__ignore, "!");    // "success"
+                                console.writeline(xhr);
+                            },
+                            beforeSend: function() {
+                                console.writeline("Sending " + word + "...");
+                            }
+                        });
+                    } else {
+                        console.log("3: " + word);
+                    }
+                }
+                console.writeline(sentence);
             }
-            console.log(sentence);
+        }
+
+        var ListSynonyms = function(word) {
+            console.log("5: " + word);
+            var location = 0;
+            for (var i = 0, l = synObj[word].noun.syn.length; i < l; i++) {
+                if (synObj[word].noun.syn[i] == $("[data-word=\"" + word + "\"]").text()) {
+                    location = i == l - 1 ? 0 : i;
+                }
+            }
+            $("[data-word=\"" + word + "\"]").text(synObj[word].noun.syn[location+1]);
+        }
+        var AcquiredSynonyms = function(word, result, status, xhr) {
+            console.log("4: " + word);
+            synObj[word] = result;
+            $("#smart").append(" <a data-word='" + word + "' onclick='ListSynonyms(\"" + word + "\");'>" + word + "</a>");
         }
     </script>
 </body>
