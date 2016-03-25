@@ -159,7 +159,7 @@
             border: 2px solid #b0b0b0;
             overflow-y: auto;
             word-break: break-all;
-            opacity: 1;
+            opacity: .5;
             pointer-events: none;
         }
         .console-line {
@@ -242,76 +242,100 @@
     <div id="console">
     </div>
     <script type="text/javascript">
-        var synObj = {};
-        var xss = function(text) {
-            return (text+"").split("<").join("&lt;").split(">").join("&gt;").split("\"").join("&quot;");
-        }
         console.writeline = function(text) {
             console.log(text);
             $("#console").append("<span class='console-line'>&gt; " + xss(text) + "</span>");
         }
+
+        Array.prototype.clip = function() {
+            this.shift();
+            return this;
+        }
+
+        var xss = function(text) {
+            return (text+"")
+                .split('<').join("&lt;")
+                .split('>').join("&gt;")
+                .split('"').join("&quot;")
+                .split('\'').join("&#39;");
+        }
+
+        var synObj = {}, queueObj = {};
+
+        var queue = function(arr, str) {
+            queueObj = {};
+
+            if (arr.length == 0) return str;
+
+            var word = arr[0];
+            if (word == "") return queue(arr.clip(), str);         // Skips empty lines
+            if (word == "."
+             || word == ","                                        // Appends and skips
+             || word == "!"                                        // any punctuation or
+             || word == "?"                                        // or words with less
+             || word.length <= 2) {                                // than 3 letters
+                return queue(arr.clip(), str + word);
+            }
+
+            $.ajax({
+                _ignore: word,
+                dataType: "json",
+                type: "GET",
+                url: "http://words.bighugelabs.com/api/2/<KEY>/"
+                    + word.toLowerCase() + "/json",
+                beforeSend: function() {
+                    console.writeline("Sending " + word + "...");
+                },
+                complete: function(status, xhr) {
+                    console.writeline("Sent ", this._ignore, "!"); // "success"
+                    console.writeline(xhr);
+                },
+                error: function(xhr, status, error) {
+                    console.writeline(xhr);
+                    console.writeline(status);
+                    console.writeline(error);
+                    queueObj = {
+                        w: "Error!",
+                        r: error,
+                        s: status,
+                        x: xhr
+                    };
+                },
+                success: function(result, status, xhr) {
+                    var _word = xss(this._ignore);
+                    console.writeline("Succeeded on sending ", this._ignore, "!");
+                    console.writeline(status);
+                    console.log(result); // result.noun.syn == Array
+                    console.log(this._ignore);
+
+                    synObj[_word] = result;
+
+                    queueObj = {
+                        w: " <a data-word='" + _word + "' onclick='ListSynonyms(\"" + _word + "\");'>"
+                            + _word
+                            + "</a>",
+                        r: result,
+                        s: status,
+                        x: xhr
+                    };
+                }
+            });
+
+            return queue(arr.clip(), str + queueObj.w);
+            // Woop, undefined! :D
+        }
+
         var smartify = function() {
             if ($("#sentence").val().trim() != "") {                // Checks for empty input
                 var _s = $("#sentence").val().trim()
-                            .split(".").join(" . ")
-                            .split(",").join(" , ")                 // Removes puctuation
-                            .split("!").join(" ! ")                 // from the input
-                            .split("?").join(" ? ")
-                            .split(" ");                            // Gets array from input
+                        .split(".").join(" . ")
+                        .split(",").join(" , ")                     // Removes puctuation
+                        .split("!").join(" ! ")                     // from the input
+                        .split("?").join(" ? ")
+                        .split(" ");                                // Gets array from input
                 
-                $("#smart").text("");                               // Clears output
                 $("#dumb").text(xss($("#sentence").val().trim()));  // Updates "source" output
-
-                var sentence = [];                                  // Initializes array
-                for (var i = 0, l = _s.length; i < l; i++) {
-                    var word = xss(_s[i]);                          // Cleanses words
-
-                    if (word == "") continue;                       // Skips empty lines
-
-                    if (word == "."
-                     || word == ","                                 // Appends and skips
-                     || word == "!"                                 // any punctuation
-                     || word == "?") {
-                        $("#smart").append(word);
-                        continue;
-                    }
-
-                    sentence.push(word);
-
-                    console.log("1: " + word);
-                    if (l < 10) {
-                        console.log("2: " + word);
-                        $.ajax({
-                            _ignore: word,
-                            dataType: "json",
-                            type: "GET",
-                            url: "http://words.bighugelabs.com/api/2/cebf0734eef56229a6091479230f735b/"
-                                + word.toLowerCase()
-                                + "/json",
-                            error: function(xhr, status, error) {
-                                console.writeline(xhr);
-                                console.writeline(status);
-                                console.writeline(error);
-                            },
-                            success: function(result, status, xhr) {
-                                console.writeline("Succeeded on sending ", this.__ignore, "!");
-                                console.writeline(status);
-                                console.log(result); // result.noun.syn == Array
-                                console.log(this._ignore);
-                                AcquiredSynonyms(xss(this._ignore), result, status, xhr);
-                            },
-                            complete: function(status, xhr) {
-                                console.writeline("Sent ", this.__ignore, "!");    // "success"
-                                console.writeline(xhr);
-                            },
-                            beforeSend: function() {
-                                console.writeline("Sending " + word + "...");
-                            }
-                        });
-                    } else {
-                        console.log("3: " + word);
-                    }
-                }
+                $("#smart").text(xss(queue(_s)));                   // Clears output
                 console.writeline(sentence);
             }
         }
@@ -325,11 +349,6 @@
                 }
             }
             $("[data-word=\"" + word + "\"]").text(synObj[word].noun.syn[location+1]);
-        }
-        var AcquiredSynonyms = function(word, result, status, xhr) {
-            console.log("4: " + word);
-            synObj[word] = result;
-            $("#smart").append(" <a data-word='" + word + "' onclick='ListSynonyms(\"" + word + "\");'>" + word + "</a>");
         }
     </script>
 </body>
