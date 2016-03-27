@@ -21,4 +21,10 @@ Currently, it requests externally for synonyms, and allows you to cycle through 
 
 - Lack of efficiency: The program will request a word's synonyms even if it already had those in its temporary database;
 
-- Synonyms are mixed into the same list, despite their type (*nouns*, *verbs*, *adjectives* etc)
+- Synonyms are mixed into the same list, despite their type (*nouns*, *verbs*, *adjectives* etc);
+
+- Issues with phrasal verbs, because synonyms list only returns the words, not the expressions, so we have incompatibilities;
+
+- Having 2 instances of the same word on the synonyms list causes both of them to be on the 'selected' state;
+
+![Image 3](http://i.imgur.com/Tg95I1o.png)

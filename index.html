@@ -70,6 +70,7 @@
         .button-holder {
             width: 100%;
             height: 50px;
+            position: relative;
         }
         button {
             display: inline-block;
@@ -227,7 +228,8 @@
             border-radius: 3px;
             font-size: 1.2em;
         }
-        #syn-list li:hover {
+        #syn-list li:hover,
+        #syn-list li.selected {
             color: #9b59b6;
             border-color: #9b59b6;
         }
@@ -286,7 +288,11 @@
                 </div>
             </div>
             <div id="synonyms">
-                <h3>Select the synonym that makes <span class="current-word">the word</span> look the smartest!</h3>
+                <h3>
+                    Select the synonym that makes
+                    <span class="current-word">the word</span>
+                    look the smartest!
+                </h3>
                 <ul id="syn-list"></ul>
             </div>
         </div>
@@ -315,7 +321,12 @@
         </div>
         <div>
             Made with <span class="heart">❤</span> by
-            <a class="github" href="http://github.com/MatheusAvellar" target="_blank">MatheusAvellar</a>
+            <a
+              class="github"
+              href="http://github.com/MatheusAvellar"
+              target="_blank">
+                MatheusAvellar
+            </a>
         </div>
     </div>
     <div id="console">
@@ -362,7 +373,7 @@
             ignoreList: [
                 "the", "and", "for", "with", "you", "him", "her"
             ],
-            KEY: "",    // Acquired at "https://words.bighugelabs.com/login.php"
+            KEY: "cebf0734eef56229a6091479230f735b",    // Acquired at "https://words.bighugelabs.com/login.php"
             xss: function(text) {
                 return (text+"")
                     .split('<').join("&lt;")
@@ -520,6 +531,9 @@
         }
 
         o.substituteWord = function(word, sub) {
+            var _synword = o.synObj[word][sub];
+            $("#syn-list li").removeClass("selected");
+            $("#syn-list li[data-s-word=\"" + _synword + "\"]").addClass("selected");
             $("[data-word=\"" + word + "\"]").text(o.synObj[word][sub]);
         }
 
@@ -535,17 +549,17 @@
                 $("#synonyms").show();                        // Enables the synonyms table
                 $("#syn-list").html("");                      // Clears synonyms list
 
-                var location = 0;
-
                 for (var i = 0, l = o.synObj[word].length; i < l; i++) {
-                    if (o.synObj[word][i] == $word.text()) {
-                        location = i == l - 1 ? 0 : i+1;      // Finds the current word in the list
-                    }
-
+                    var s = (o.synObj[word][i] == $word.text()) ? "selected" : "";
+                    var _synword = o.synObj[word][i];
+                    console.log(s);
                     $("#syn-list").append(
-                        "<li onclick='o.substituteWord(\"" + word + "\", " + i + ");'>"
-                        +   o.synObj[word][i]
-                        + "</li>"
+                        "<li "
+                        +  "data-s-word='" + _synword + "' "
+                        +  "class='" + s + "' "
+                        +  "onclick='o.substituteWord(\"" + word + "\", " + i + ");'>"
+                        +    _synword
+                        +"</li>"
                     );
                 }
             }
